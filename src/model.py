@@ -54,6 +54,7 @@ class OdorGNN(nn.Module):
         num_gnn_layers: int = 2,
         poly_degree:   int = 2,
         conv_channels: int = 64,
+        output_dim:    int = ODOR_DIM,
     ):
         super().__init__()
 
@@ -84,7 +85,7 @@ class OdorGNN(nn.Module):
         self.output_head = nn.Sequential(
             nn.Linear(conv_channels, 32),
             nn.ReLU(),
-            nn.Linear(32, ODOR_DIM),
+            nn.Linear(32, output_dim),
         )
 
     # ── Forward pass ──────────────────────────────────────────────────────────
