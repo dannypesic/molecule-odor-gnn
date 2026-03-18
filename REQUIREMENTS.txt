@@ -1,0 +1,4 @@
+torch>=2.0
+pysmiles>=1.1
+networkx>=3.0
+scikit-learn>=1.3
