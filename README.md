@@ -83,13 +83,21 @@ Using the [pysmiles](https://github.com/pckroon/pysmiles) library, a SMILES stri
 ## Improvements?
 While accuracy is relatively high, molecular-odor-gnn could be improved by increasing the number of training epochs and using a broader dataset. 
 
+## Thanks
+
+Thank you to [pysmiles](https://github.com/pckroon/pysmiles), [Networkx](https://networkx.org/en/), and [Lee et al. (2023)](https://doi.org/10.1126/science.ade4401) for the technical backend of this project, and to [Claude](https://claude.ai) for assisting with software development. 
+
+A special thanks to Mr. Fenner for inspiring this project.
+
 ## Dataset
 
-Training data sourced from the [Principal Odor Map dataset](https://github.com/ARY2260/openpom) — 
-4,983 molecules with 138 odor descriptors, derived from GoodScents and Leffingwell PMP 2001.
+Training data from the Principal Odor Map dataset — 4,983 molecules with 138 odor 
+descriptors, derived from GoodScents and Leffingwell PMP 2001.
 
-> Lee et al. (2023). A principal odor map unifies diverse tasks in human olfactory perception. 
-> *Science*, 381(6661), 999–1006. https://doi.org/10.1126/science.ade4401
+> Lee et al. (2023). A principal odor map unifies diverse tasks in human olfactory 
+> perception. *Science*, 381(6661), 999–1006. https://doi.org/10.1126/science.ade4401
+
+CSV sourced from [ARY2260/openpom](https://github.com/ARY2260/openpom).
 
 ## License
 Code is MIT licensed. Note that model weights are trained on the 
