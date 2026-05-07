@@ -6,11 +6,11 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 import csv
 
-from src.dataset import OdorDataset, collate_single
-from src.model import OdorGNN
+from dataset import OdorDataset, collate_single
+from model import OdorGNN
 
 DATA_PATH      = Path(__file__).parent.parent / "data" / "data.json"
-EPOCHS         = 100
+EPOCHS         = 50
 LR             = 1e-3
 HIDDEN_DIM     = 32
 CONV_CHANNELS  = 64

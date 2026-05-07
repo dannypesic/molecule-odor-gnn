@@ -5,7 +5,7 @@ from pathlib import Path
 import torch
 from torch.utils.data import Dataset
 
-from src.utils import smiles_to_tensors
+from utils import smiles_to_tensors
 
 
 class OdorDataset(Dataset):
