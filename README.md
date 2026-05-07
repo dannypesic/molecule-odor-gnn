@@ -81,13 +81,7 @@ Yes! It works pretty well! Here are some examples:
 Using the [pysmiles](https://github.com/pckroon/pysmiles) library, a SMILES string is converted into a [Networkx](https://networkx.org/en/) graph where each node contains a feature vector of element number, aromaticity, isotope, hydrogen count, and charge. A Laplacian matrix is created from the graph's adjacency and degree matrices. Then, a Laplacian polynomial of degree 2 is made with its coefficients as parameters, which acts on each feature vector. This creates a series of layers that map the graph to the "convoluted graph," which is then turned into an "adjacency tensor." This tensor is the adjacency matrix of the graph, except each value of 1 is replaced by the two corresponding feature vectors. Finally, a series of convolutions runs over this tensor to create the output vector. 
 
 ## Improvements?
-While accuracy is relatively high, molecular-odor-gnn could be improved by increasing the number of training epochs and using a broader dataset. 
-
-## Thanks
-
-Thank you to [pysmiles](https://github.com/pckroon/pysmiles), [Networkx](https://networkx.org/en/), and [Lee et al. (2023)](https://doi.org/10.1126/science.ade4401) for the technical backend of this project, and to [Claude](https://claude.ai) for assisting with software development. 
-
-A special thanks to Mr. Fenner for inspiring this project.
+While accuracy is relatively high, molecular-odor-gnn could be improved by increasing the number of training epochs and using a broader dataset, along with implementing more features from [pysmiles](https://github.com/pckroon/pysmiles).
 
 ## Dataset
 
@@ -98,8 +92,3 @@ descriptors, derived from GoodScents and Leffingwell PMP 2001.
 > perception. *Science*, 381(6661), 999–1006. https://doi.org/10.1126/science.ade4401
 
 CSV sourced from [ARY2260/openpom](https://github.com/ARY2260/openpom).
-
-## License
-Code is MIT licensed. Note that model weights are trained on the 
-[OpenPOM dataset](https://github.com/ARY2260/openpom). Consult their 
-license before any commercial use.

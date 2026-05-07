@@ -17,7 +17,9 @@ molecules = [
     ("Limonene",     "C=C(C)C1CCC(=CC1)C"),
     ("Allicin",      "C=CCS(=O)SCC=C"),
     ("Hedione",      "COC(=O)CC1CCC(=O)C1CCCC"),
-    ("Butyric acid", "CCCC(=O)O")
+    ("Butyric acid", "CCCC(=O)O"),
+    ("Mint", "CC1=CCC(CC1=O)C(=C)C[C@H](C)C"),
+    ("Caraway", "CC1=CCC(CC1=O)C(=C)C[C@@H](C)C")
 ]
 
 for name, smiles in molecules:

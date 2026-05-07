@@ -7,9 +7,8 @@ from torch.utils.data import DataLoader, random_split
 import csv
 
 from src.dataset import OdorDataset, collate_single
-from src.model import OdorGNN, ODOR_BASIS
+from src.model import OdorGNN
 
-# ── Config ─────────────────────────────────────────────────────────────────────
 DATA_PATH      = Path(__file__).parent.parent / "data" / "data.json"
 EPOCHS         = 100
 LR             = 1e-3
@@ -22,13 +21,11 @@ DEVICE         = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 torch.manual_seed(42)
 
-# ── Data ───────────────────────────────────────────────────────────────────────
 dataset    = OdorDataset(DATA_PATH)
 val_size   = max(1, int(len(dataset) * VAL_SPLIT))
 train_size = len(dataset) - val_size
 train_set, val_set = random_split(dataset, [train_size, val_size])
 
-# batch_size=1 because molecules differ in atom count — collate_single unwraps
 train_loader = DataLoader(
     train_set, batch_size=1, shuffle=True,  collate_fn=collate_single
 )
@@ -38,8 +35,6 @@ val_loader = DataLoader(
 
 print(f"Train: {train_size} molecules   Val: {val_size} molecules")
 
-# ── Model ──────────────────────────────────────────────────────────────────────
-# ODOR_DIM is read from the dataset so it works for both 6-label and 138-label data
 model = OdorGNN(
     hidden_dim=HIDDEN_DIM,
     num_gnn_layers=NUM_GNN_LAYERS,
@@ -52,20 +47,16 @@ print(model)
 total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print(f"Trainable parameters: {total_params:,}")
 
-# BCEWithLogitsLoss is correct for multilabel binary classification
-# (each odor label is independently 0 or 1)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = optim.Adam(model.parameters(), lr=LR)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode="min", factor=0.5, patience=10
 )
 
-# ── Training loop ──────────────────────────────────────────────────────────────
 best_val_loss = float("inf")
 
 for epoch in range(1, EPOCHS + 1):
 
-    # Train
     model.train()
     train_loss = 0.0
     for x, A, L, y in train_loader:
@@ -80,36 +71,33 @@ for epoch in range(1, EPOCHS + 1):
 
     train_loss /= len(train_loader)
 
-    # Validate
-    if epoch % 1 == 0 or epoch == EPOCHS:
-        model.eval()
-        val_loss = 0.0
-        with torch.no_grad():
-            for x, A, L, y in val_loader:
-                x, A, L, y = x.to(DEVICE), A.to(DEVICE), L.to(DEVICE), y.to(DEVICE)
-                pred      = model(x, L, A)
-                val_loss += criterion(pred, y).item()
-        val_loss /= len(val_loader)
+    model.eval()
+    val_loss = 0.0
+    with torch.no_grad():
+        for x, A, L, y in val_loader:
+            x, A, L, y = x.to(DEVICE), A.to(DEVICE), L.to(DEVICE), y.to(DEVICE)
+            pred      = model(x, L, A)
+            val_loss += criterion(pred, y).item()
+    val_loss /= len(val_loader)
 
-        scheduler.step(val_loss)
+    scheduler.step(val_loss)
 
-        flag = "  ← best" if val_loss < best_val_loss else ""
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
-            torch.save(model.state_dict(), "best_model.pth")
+    flag = "  ← best" if val_loss < best_val_loss else ""
+    if val_loss < best_val_loss:
+        best_val_loss = val_loss
+        torch.save(model.state_dict(), "best_model.pth")
 
-        print(
-            f"Epoch {epoch:4d}/{EPOCHS}  "
-            f"train={train_loss:.4f}  val={val_loss:.4f}{flag}"
-        )
+    print(
+        f"Epoch {epoch:4d}/{EPOCHS}  "
+        f"train={train_loss:.4f}  val={val_loss:.4f}{flag}"
+    )
 
 print(f"\nBest val loss: {best_val_loss:.4f}  (saved to best_model.pth)")
 
-# ── Sample predictions ─────────────────────────────────────────────────────────
 model.load_state_dict(torch.load("best_model.pth", map_location=DEVICE))
 model.eval()
 
-with open(DATA_PATH.parent / "../data/curated_GS_LF_merged_4983.csv") as f:
+with open(DATA_PATH.parent / "curated_GS_LF_merged_4983.csv") as f:
     headers = next(csv.reader(f))
 labels = [h for h in headers if h != "nonStereoSMILES"]
 
