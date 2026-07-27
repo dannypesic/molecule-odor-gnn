@@ -1,94 +1,53 @@
 # molecule-odor-gnn
-A Graph Neural Network that determines the odor of a molecular substance based on its structure
+
+A Graph Neural Network that predicts the odor of a molecule from its structure. Input a SMILES string and recieve a probability for each of 138 odor descriptors.
 
 ## How do I use it?
-The model `best_model.pth` is pre-trained from `src/train.py`. Try it out by cloning the repository, entering the project directory, and running `python3 inference.py` to see the examples. `inference.py` contains a list of molecules of the form `("Name", "SMILES String")`, which can be manually changed.
 
-Note: both the pre-trained model weights, the dataset, and the formatted data json are included in this repo for ease of retraining. Their collective size is approximately 5.3MB.
+```bash
+git clone https://github.com/dannypesic/molecule-odor-gnn
+cd molecule-odor-gnn
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python3 inference.py
+```
+
+`inference.py` holds a list of molecules of the form `("Name", "SMILES String")` which can be edited for testing.
+
+The pre-trained weights, the dataset, and the formatted data JSON are all committed here for ease of retraining (~5.3 MB total). To retrain: `cd src && python train.py`.
 
 ## Can I use any molecule?
+
 You should be able to. Due to the architecture of the model, there is no real limit to molecular dimensions. Large molecules tend to not be odorous, so the model will classify them as odorless.
 
-## Does it work?
-Yes! It works pretty well! Here are some examples:
+## Results
 
-**Geraniol** — `CC(C)=CCC/C(C)=C/CO`
-- floral: 0.819
-- rose: 0.717
-- sweet: 0.485
-- fruity: 0.454
-- citrus: 0.394
-- green: 0.313
-- waxy: 0.294
-- lemon: 0.277
-- fresh: 0.269
-- lily: 0.265
-- herbal: 0.165
-- muguet: 0.159
-- woody: 0.155
+| Molecule | SMILES | Prediction |
+|---|---|---|
+| Geraniol | `CC(C)=CCC/C(C)=C/CO` | floral 0.82 · rose 0.72 · sweet 0.49 · fruity 0.45 · citrus 0.39 |
+| Allicin | `C=CCS(=O)SCC=C` | alliaceous 0.91 · onion 0.88 · garlic 0.88 · sulfurous 0.72 · vegetable 0.65 |
+| Butyric acid | `CCCC(=O)O` | cheesy 0.85 · sour 0.77 · sweaty 0.37 · sharp 0.27 · dairy 0.25 |
+| Limonene | `C=C(C)C1CCC(=CC1)C` | herbal 0.58 · citrus 0.45 · woody 0.42 · pine 0.35 · fresh 0.31 |
 
-**Limonene** — `C=C(C)C1CCC(=CC1)C`
-- herbal: 0.582
-- citrus: 0.446
-- woody: 0.420
-- pine: 0.353
-- sweet: 0.327
-- fresh: 0.313
-- mint: 0.287
-- balsamic: 0.283
-- floral: 0.276
-- terpenic: 0.273
-- spicy: 0.269
-- green: 0.207
-- fruity: 0.202
-- lemon: 0.199
-- cooling: 0.160
+## How accurate is it?
 
-**Allicin** — `C=CCS(=O)SCC=C`
-- alliaceous: 0.914
-- onion: 0.884
-- garlic: 0.876
-- sulfurous: 0.718
-- vegetable: 0.654
-- green: 0.537
-- meaty: 0.312
-- savory: 0.288
-- pungent: 0.226
-- roasted: 0.198
-- cooked: 0.197
-- radish: 0.171
+```bash
+./accuracy.sh                    # Accuracy: 97.7%; threshold 0.5
+THRESHOLD=0.3 ./accuracy.sh      # sweep the decision cutoff
+```
 
-**Hedione** — `COC(=O)CC1CCC(=O)C1CCCC`
-- fruity: 0.662
-- sweet: 0.315
-- floral: 0.303
-- green: 0.298
-- herbal: 0.279
-- jasmin: 0.198
-- tropical: 0.183
-- woody: 0.179
-
-**Butyric acid** — `CCCC(=O)O`
-- cheesy: 0.854
-- sour: 0.766
-- sweaty: 0.372
-- sharp: 0.273
-- dairy: 0.248
-- fruity: 0.228
-- buttery: 0.227
+**97.7% Hamming accuracy** on 10 molecules verified absent from the training set (structural isomorphism check against all 4,983 entries). The script scores each label slot per molecule at a default probability threshold of 0.5.
 
 ## How does the math work?
-Using the [pysmiles](https://github.com/pckroon/pysmiles) library, a SMILES string is converted into a [Networkx](https://networkx.org/en/) graph where each node contains a feature vector of element number, aromaticity, isotope, hydrogen count, and charge. A Laplacian matrix is created from the graph's adjacency and degree matrices. Then, a Laplacian polynomial of degree 2 is made with its coefficients as parameters, which acts on each feature vector. This creates a series of layers that map the graph to the "convoluted graph," which is then turned into an "adjacency tensor." This tensor is the adjacency matrix of the graph, except each value of 1 is replaced by the two corresponding feature vectors. Finally, a series of convolutions runs over this tensor to create the output vector. 
 
-## Improvements?
-While accuracy is relatively high, molecular-odor-gnn could be improved by increasing the number of training epochs and using a broader dataset, along with implementing more features from [pysmiles](https://github.com/pckroon/pysmiles).
+Using the [pysmiles](https://github.com/pckroon/pysmiles) library, a SMILES string is converted into a [Networkx](https://networkx.org/en/) graph where each node contains a feature vector of element number, aromaticity, isotope, hydrogen count, and charge. A Laplacian matrix is created from the graph's adjacency and degree matrices. Then, a Laplacian polynomial of degree 2 is made with its coefficients as parameters, which acts on each feature vector. This creates a series of layers that map the graph to the "convoluted graph," which is then turned into an "adjacency tensor." This tensor is the adjacency matrix of the graph, except each value of 1 is replaced by the two corresponding feature vectors. Finally, a series of convolutions runs over this tensor to create the output vector.
 
 ## Dataset
 
-Training data from the Principal Odor Map dataset — 4,983 molecules with 138 odor 
+Training data from the Principal Odor Map dataset: 4,983 molecules with 138 odor
 descriptors, derived from GoodScents and Leffingwell PMP 2001.
 
-> Lee et al. (2023). A principal odor map unifies diverse tasks in human olfactory 
+> Lee et al. (2023). A principal odor map unifies diverse tasks in human olfactory
 > perception. *Science*, 381(6661), 999–1006. https://doi.org/10.1126/science.ade4401
 
 CSV sourced from [ARY2260/openpom](https://github.com/ARY2260/openpom).
